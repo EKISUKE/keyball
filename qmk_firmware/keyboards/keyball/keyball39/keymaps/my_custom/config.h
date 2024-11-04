@@ -34,7 +34,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RGBLIGHT_EFFECT_TWINKLE
 #endif
 
+#ifdef COMBO_ENABLE
 #define COMBO_COUNT 9
+#endif
 
 #define KEYBALL_SCROLLSNAP_ENABLE 2
 
@@ -59,4 +61,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 // セカンダリとの情報やり取り用
+#ifdef RPC_ENABLE
 #define SPLIT_TRANSACTION_IDS_USER MY_GET_BALL_STATE
+#endif
+
+// QMKのオートマウスレイヤー
+#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+#define AUTO_MOUSE_DEFAULT_LAYER 1 // レイヤーが大きいと別レイヤー動作時に切り替わってしまうため、最小レイヤーにしています。
