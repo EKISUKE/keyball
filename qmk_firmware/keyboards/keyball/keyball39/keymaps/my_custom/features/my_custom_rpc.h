@@ -9,6 +9,7 @@ void rpc_get_ball_state_handler(uint8_t in_buflen, const void* in_data, uint8_t 
     state = ((to_slave_t*)in_data)->state;
 }
 
+#ifdef RPC_ENABLE
 void init_rpc(void)
 {
     if (!is_keyboard_master())
@@ -41,6 +42,7 @@ void rpc_get_ball_state_invoke(void)
     transaction_rpc_send(MY_GET_BALL_STATE, sizeof(to_slave_data), &to_slave_data);
 #endif
 }
+#endif
 
 
 void housekeeping_task_user(void)
