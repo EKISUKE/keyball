@@ -42,9 +42,10 @@ enum custom_keycodes {
     COMBO_sumitsuki_BRC,                          // (0x7E4B):
     COMBO_select_sumitsuki_BRC,                   // (0x7E4C):
     COMBO_MINUS_SPACE,                            // (0x7E4D):
-
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
     MKC_CLKTH_I,                                  // マウスレイヤーに移る際の移動値閾値を増加
     MKC_CLKTH_D,                                  // マウスレイヤーに移る際の移動値閾値を減少
+#endif
 
     // CUSTOM_LT1_LEFT,                                    //
     // CUSTOM_LT1_LEFT,                                    //
@@ -62,6 +63,7 @@ bool process_record_my_custom(uint16_t keycode, keyrecord_t* record)
     }
     switch (keycode)
     {
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
     case MKC_CLKTH_I:
         user_config.to_clickable_movement += 5;
         if (user_config.to_clickable_movement > INT16_MAX) {
@@ -74,6 +76,7 @@ bool process_record_my_custom(uint16_t keycode, keyrecord_t* record)
             user_config.to_clickable_movement = 0;
         }
         return false;
+#endif
     case KBC_SAVE:
         eeconfig_update_user(user_config.raw);
         return false;
@@ -97,6 +100,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   static bool is_kana = false;  // レイヤー1の状態を追跡する変数
 
   switch (keycode) {
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
     // デフォルトのマウスキーを自動クリックレイヤーで使用可能にする
     case KC_MS_BTN1:
     case KC_MS_BTN2:
@@ -115,6 +119,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       return true;
     }
+#endif
 
     // 以下のキーは自動クリックレイヤーで使用可能にする
     case KC_LALT:
@@ -145,52 +150,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return true;
     }
 
-      // 上位レイヤーから下位レイヤーへ移動できるようにする
-      //   case LT(1, KC_LNG2):
-      //   case LT(1, KC_LNG1):
-      //   case LT(2, KC_V):
-      //   case S(KC_8): {
-      //     // int16_t hlayer = get_highest_layer(layer_state);
-      //     // if (get_highest_layer(layer_state) == 2) {
-      //     if (record->event.pressed) {
-      //       // キーダウン時:
-      //       lt_timer = timer_read();                          // 現在のタイマー値を記録
-      //       previous_layer = get_highest_layer(layer_state);  // 現在の最上位レイヤーを記録
-      //       layer_off(previous_layer);                        // 現在のレイヤーをオフにする
-
-      //       if (keycode == LT(1, KC_LNG2) || keycode == LT(1, KC_LNG1)) {
-      //         layer_on(1);
-      //       } else if (keycode == LT(2, KC_V) || keycode == S(KC_8)) {
-      //         layer_on(2);
-      //       }
-      //     } else {
-      //       // キーアップ時:
-      //       layer_on(previous_layer);  // 前のレイヤーをオンにする
-      //       if (keycode == LT(1, KC_LNG2) || keycode == LT(1, KC_LNG1)) {
-      //         layer_off(1);
-      //       } else if (keycode == LT(2, KC_V) || keycode == S(KC_8)) {
-      //         layer_off(2);
-      //       }
-      //       if (timer_elapsed(lt_timer) < TAPPING_TERM) {
-      //         // タッピングタイム内に放された場合はタップ動作
-      //         if (keycode == LT(1, KC_LNG2)) {
-      //           tap_code(KC_LNG2);
-      //         } else if (keycode == LT(1, KC_LNG1)) {
-      //           tap_code(KC_LNG1);
-      //         } else if (keycode == LT(2, KC_V)) {
-      //           tap_code(KC_V);
-      //         } else if (keycode == S(KC_8)) {
-      //           tap_code16(S(KC_8));
-      //         }
-      //       }
-
-      //     }
-      //   }
-      //     return false;
-      // }
-
-      static bool is_lt1_lang2_pressed = false;  // LT(1, KC_LNG2)の状態を追跡
-      static bool is_lt1_lang1_pressed = false;  // LT(1, KC_LNG1)の状態を追跡
+    static bool is_lt1_lang2_pressed = false;  // LT(1, KC_LNG2)の状態を追跡
+    static bool is_lt1_lang1_pressed = false;  // LT(1, KC_LNG1)の状態を追跡
 
       // 上位レイヤーから下位レイヤーへ移動できるようにする
     case LT(1, KC_LNG2):  // レイヤー1へのキー
