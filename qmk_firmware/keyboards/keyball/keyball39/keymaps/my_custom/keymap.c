@@ -141,6 +141,72 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
+#include <math.h>
+#include <stdint.h>
+#include <limits.h>
+
+#define AVERAGE_HISTORY 4
+#define LINEAR_THRESHOLD 0.2f  // 速度20%までリニア
+#define LINEAR_OUTPUT_MAX 0.8f // 出力速度は0.8まで
+#define MAX_OUTPUT_SPEED 1.0f         // 出力速度最大（正規化）
+#define MINIMUM_MOVEMENT 0.01f // 最低移動保証
+#define MAX_ACCELERATION 2.0f  // 最大加速倍率（高速域で）
+
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    static int8_t x_history[AVERAGE_HISTORY] = {0};
+    static int8_t y_history[AVERAGE_HISTORY] = {0};
+    static uint8_t history_index = 0;
+
+    // 履歴保存
+    x_history[history_index] = mouse_report.x;
+    y_history[history_index] = mouse_report.y;
+    history_index = (history_index + 1) % AVERAGE_HISTORY;
+
+    // 重み付き平均
+    int32_t x_weighted_sum = 0;
+    int32_t y_weighted_sum = 0;
+    int32_t total_weight = 0;
+    for (int i = 0; i < AVERAGE_HISTORY; i++) {
+        int weight = (i + 1);
+        x_weighted_sum += x_history[(history_index + i) % AVERAGE_HISTORY] * weight;
+        y_weighted_sum += y_history[(history_index + i) % AVERAGE_HISTORY] * weight;
+        total_weight += weight;
+    }
+    int8_t avg_x = (int8_t)(x_weighted_sum / total_weight);
+    int8_t avg_y = (int8_t)(y_weighted_sum / total_weight);
+
+    mouse_report.x = avg_x;
+    mouse_report.y = avg_y;
+
+    // 正規化
+    float norm_x = (float)avg_x / (float)INT8_MAX;
+    float norm_y = (float)avg_y / (float)INT8_MAX;
+    float mag = sqrtf(norm_x * norm_x + norm_y * norm_y);
+
+    if (mag > 0.0f) {
+        float accel_scale;
+        if (mag <= LINEAR_THRESHOLD) {
+            // 低速域：リニア、ただし最低保証あり
+            accel_scale = LINEAR_OUTPUT_MAX;
+            if (mag < MINIMUM_MOVEMENT) {
+                accel_scale = MINIMUM_MOVEMENT / mag;
+            }
+        } else {
+            // 高速域：スムーズに最大加速へ
+            float t = (mag - LINEAR_THRESHOLD) / (1.0f - LINEAR_THRESHOLD);
+            accel_scale = LINEAR_OUTPUT_MAX + t * (MAX_ACCELERATION - LINEAR_OUTPUT_MAX);
+        }
+
+        // スケール適用
+        mouse_report.x = (int8_t)fmaxf(fminf(avg_x * accel_scale, INT8_MAX), INT8_MIN);
+        mouse_report.y = (int8_t)fmaxf(fminf(avg_y * accel_scale, INT8_MAX), INT8_MIN);
+    }
+
+    return mouse_report;
+}
+
+
+
 layer_state_t layer_state_set_user(layer_state_t state) {
     // レイヤーが1または2の場合、スクロールモードが有効になる
     // keyball_set_scroll_mode(get_highest_layer(state) == 1 || get_highest_layer(state) == 2);
@@ -265,6 +331,7 @@ void oledkit_render_info_user(void) {
     keyball_oled_render_keyinfo();   // キー情報を表示
     keyball_oled_render_ballinfo();  // トラックボール情報を表示
     keyball_oled_render_layerinfo(); // <Layer>を表示する
+
 
 //     // <Layer>を表示する
 // #if OLED_INFO_COMPACT
