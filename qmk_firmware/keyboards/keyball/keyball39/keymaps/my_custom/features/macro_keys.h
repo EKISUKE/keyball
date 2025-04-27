@@ -42,9 +42,10 @@ enum custom_keycodes {
     COMBO_sumitsuki_BRC,                          // (0x7E4B):
     COMBO_select_sumitsuki_BRC,                   // (0x7E4C):
     COMBO_MINUS_SPACE,                            // (0x7E4D):
-
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
     MKC_CLKTH_I,                                  // マウスレイヤーに移る際の移動値閾値を増加
     MKC_CLKTH_D,                                  // マウスレイヤーに移る際の移動値閾値を減少
+#endif
 
     // CUSTOM_LT1_LEFT,                                    //
     // CUSTOM_LT1_LEFT,                                    //
@@ -62,6 +63,7 @@ bool process_record_my_custom(uint16_t keycode, keyrecord_t* record)
     }
     switch (keycode)
     {
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
     case MKC_CLKTH_I:
         user_config.to_clickable_movement += 5;
         if (user_config.to_clickable_movement > INT16_MAX) {
@@ -74,6 +76,7 @@ bool process_record_my_custom(uint16_t keycode, keyrecord_t* record)
             user_config.to_clickable_movement = 0;
         }
         return false;
+#endif
     case KBC_SAVE:
         eeconfig_update_user(user_config.raw);
         return false;
@@ -97,6 +100,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   static bool is_kana = false;  // レイヤー1の状態を追跡する変数
 
   switch (keycode) {
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
     // デフォルトのマウスキーを自動クリックレイヤーで使用可能にする
     case KC_MS_BTN1:
     case KC_MS_BTN2:
@@ -115,6 +119,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       return true;
     }
+#endif
 
     // 以下のキーは自動クリックレイヤーで使用可能にする
     case KC_LALT:
@@ -158,11 +163,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return true;
     }
 
+    static bool is_lt1_lang2_pressed = false;  // LT(1, KC_LNG2)の状態を追跡
+    static bool is_lt1_lang1_pressed = false;  // LT(1, KC_LNG1)の状態を追跡
 
-      static bool is_lt1_lang2_pressed = false;  // LT(1, KC_LNG2)の状態を追跡
-      static bool is_lt1_lang1_pressed = false;  // LT(1, KC_LNG1)の状態を追跡
-
-      // 上位レイヤーから下位レイヤーへ移動できるようにする
+    // 上位レイヤーから下位レイヤーへ移動できるようにする
     case LT(1, KC_LNG2):  // レイヤー1へのキー
     case LT(1, KC_LNG1):  // レイヤー1へのキー
       if (record->event.pressed) {

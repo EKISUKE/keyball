@@ -2,6 +2,7 @@
  * Copyright 2022 @Yowkees
  * Copyright 2022 MURAOKA Taro (aka KoRoN, @kaoriya)
  * Copyright 2023 kamidai (@d_kamiichi)
+ * Copyright 2024 EKISUKE
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,19 +47,9 @@
 
 #include QMK_KEYBOARD_H
 #include "quantum.h"
+#include "define_variables.h"
 
 
-
-
-// キーボードに保存する用のユーザーコンフィグ
-typedef union {
-    uint32_t raw;
-    struct {
-        int16_t to_clickable_movement;  // クリックレイヤーが有効になるしきい値
-    };
-} user_config_t;
-
-user_config_t user_config;
 
 // インクルード順の関係で一旦ここで処理
 void eeconfig_init_user(void) {
@@ -68,25 +59,30 @@ void eeconfig_init_user(void) {
 }
 
 #include "utils/functions.h"
-#include "features/swipe_gesture.h"
-#include "features/auto_click_layer.h"
- // #include "features/back_to_layer0_btn1.h"
- // #include "features/one_tap_multi_click.h"
-#include "features/macro_keys.h"
+// #include "features/swipe_gesture.h"
+// #include "features/auto_click_layer.h"
+// #include "features/back_to_layer0_btn1.h"
+// #include "features/one_tap_multi_click.h"
+// #include "features/macro_keys.h"
 
 // 容量オーバーのため不使用（VIAをOFFにすれば、使用可能）
 // #include "features/overrides.h"
+#ifdef COMBO_ENABLE
 #include "features/combo.h"
+#endif
 
+#ifdef RPC_ENABLE
 #include "features/my_custom_rpc.h"
+#endif
 
-
+// ユーザー向け後初期化
 void keyboard_post_init_user(void) {
     if (eeconfig_is_enabled()) {
         user_config.raw = eeconfig_read_user();
     }
-
+#ifdef RPC_ENABLE
     init_rpc();
+#endif
 }
 
 
@@ -97,16 +93,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_Q            , KC_W    , KC_E    , KC_R         , KC_T          ,                                KC_Y         , KC_U   , KC_I     , KC_O          , KC_P,
       SFT_T(KC_A)     , KC_S    , KC_D    , KC_F         , KC_G          ,                                KC_H         , KC_J   , KC_K     , KC_L          , SFT_T(KC_TAB),
       LT(3, KC_Z)     , KC_X    , KC_C    , KC_V         , KC_B          ,                                KC_N         , KC_M   , KC_COMMA , LT(3,KC_DOT)  , LT(4,KC_SLASH),
-      CTL_T(KC_LNG2)  , KC_LALT , KC_LGUI , LT(1,KC_TAB) , LT(2,KC_SPACE), CTL_T(KC_ESC),        KC_BSPC, ALT_T(KC_ENT), _______, _______  , _______       , LT(2,KC_LNG1)
+      CTL_T(KC_LNG2)  , KC_LALT , KC_LGUI , LT(6,KC_TAB) , LT(2,KC_SPACE), CTL_T(KC_ESC),        KC_BSPC, ALT_T(KC_ENT), _______, _______  , _______       , LT(2,KC_LNG1)
     ),
 
     [1] = LAYOUT_universal(
-      S(KC_1)  , S(KC_2)  , S(KC_3)   , S(KC_4)    , S(KC_5)   ,                                 KC_INS   , KC_7    , KC_8     , KC_9     , KC_MINUS ,
-      KC_LSFT  , S(KC_6)  , S(KC_8)   , S(KC_7)    , S(KC_BSLS),                                 _______  , KC_4    , KC_5     , KC_6     , KC_EQUAL ,
-      _______  , KC_SCLN  , S(KC_SCLN), S(KC_QUOTE), KC_QUOTE  ,                                 KC_0     , KC_1    , KC_2     , KC_3     , KC_KP_ENTER,
-      _______  , _______  , _______   , _______    , _______   , _______  ,             KC_DEL , _______  , _______ , _______  , _______  , _______
+      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  ,KC_MS_BTN3, _______  , _______  ,
+      _______  , _______  , _______  , _______  , _______  ,                            _______  ,KC_MS_BTN1,KC_MS_BTN2, SCRL_MO  , _______  ,
+      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
+      _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
     ),
-
+   
     [2] = LAYOUT_universal(
       SSNP_FRE , SSNP_VRT    , LGUI(KC_UP)  , SSNP_HOR     , KC_F8  ,                        LCA(KC_F11), KC_HOME  , KC_UP     , KC_END      , KC_GRAVE,
       KC_LSFT  , LSG(KC_LEFT), LGUI(KC_DOWN), LSG(KC_RIGHT), _______,                        KC_PAGE_UP , KC_LEFT  , KC_DOWN   , KC_RIGHT    , KC_PAGE_DOWN,
@@ -124,7 +120,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [4] = LAYOUT_universal(
       _______  , _______     , _______     , _______    , _______  ,                             _______   , _______   , KC_MS_BTN3  , _______  , _______  ,
       _______  , _______     , _______     , KC_MS_BTN1 , _______  ,                             _______   , KC_MS_BTN1, KC_MS_BTN2  , SCRL_MO  , _______  ,
-      _______  , MKC_CLKTH_I , MKC_CLKTH_D , CPI_I100   , CPI_D100 ,                             _______   , C(KC_C)   , C(KC_V)     , _______   , _______  ,
+      AML_TO   , AML_I50     , AML_D50     , CPI_I100   , CPI_D100 ,                             _______   , C(KC_C)   , C(KC_V)     , _______   , _______  ,
       SCRL_DVI , SCRL_DVD    , KBC_SAVE    , _______    , _______  , _______  ,      KC_MS_BTN4, KC_MS_BTN5, _______   , _______     , _______   , _______
     ),
 
@@ -136,11 +132,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [6] = LAYOUT_universal(
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  ,KC_MS_BTN3, _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  ,KC_MS_BTN1,KC_MS_BTN2, SCRL_MO  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
-    )
+      S(KC_1)  , S(KC_2)  , S(KC_3)   , S(KC_4)    , S(KC_5)   ,                                 _______  , _______  ,KC_MS_BTN3, _______  , KC_MINS  ,
+      KC_LSFT  , S(KC_6)  , S(KC_8)   , S(KC_7)    , S(KC_BSLS),                                 _______  ,KC_MS_BTN1,KC_MS_BTN2, SCRL_MO  , KC_EQUAL ,
+      _______  , KC_SCLN  , S(KC_SCLN), S(KC_QUOTE), KC_QUOTE  ,                                 _______  , _______  , _______  , _______  , _______  ,
+      _______  , _______  , _______   , _______    , _______   , _______  ,             KC_DEL , _______  , _______  , _______  , _______  , _______
+    ),
+    
 };
 // clang-format on
 
@@ -204,6 +201,7 @@ const char* get_u8_str_with_buf_size(uint8_t curr_num, size_t buf_size) {
 
 // オートマウスレイヤーのステート表示
 void oled_render_stateinfo(void) {
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #if OLED_INFO_COMPACT
     // <state>を表示
     switch (state) {
@@ -255,6 +253,7 @@ void oled_render_stateinfo(void) {
         break;
     }
 #endif
+#endif
 }
 
 // プライマリ側のOLED表示
@@ -265,16 +264,18 @@ void oledkit_render_info_user(void) {
 
     keyball_oled_render_keyinfo();   // キー情報を表示
     keyball_oled_render_ballinfo();  // トラックボール情報を表示
+    keyball_oled_render_layerinfo(); // <Layer>を表示する
 
-    // <Layer>を表示する
-#if OLED_INFO_COMPACT
-    oled_write_P(PSTR("Lyr:"), false);
-    oled_write(get_u8_str_with_buf_size(get_highest_layer(layer_state), 2), false);
-#else
-    oled_write_P(PSTR("Layer:"), false);
-    oled_write(get_u8_str(get_highest_layer(layer_state), ' '), false);
-#endif
+//     // <Layer>を表示する
+// #if OLED_INFO_COMPACT
+//     oled_write_P(PSTR("Lyr:"), false);
+//     oled_write(get_u8_str_with_buf_size(get_highest_layer(layer_state), 2), false);
+// #else
+//     oled_write_P(PSTR("Layer:"), false);
+//     oled_write(get_u8_str(get_highest_layer(layer_state), ' '), false);
+// #endif
 
+#ifndef POINTING_DEVICE_AUTO_MOUSE_ENABLE
     // <マウス移動量 / クリックレイヤーしきい値>を表示
     oled_write_P(PSTR(" MV:"), false);
 #if OLED_INFO_COMPACT
@@ -287,6 +288,7 @@ void oledkit_render_info_user(void) {
     oled_write(get_u8_str_with_buf_size(user_config.to_clickable_movement, 3), false);
 #else
     oled_write(get_u8_str(user_config.to_clickable_movement, ' '), false);
+#endif
 #endif
 
     oled_render_stateinfo();
