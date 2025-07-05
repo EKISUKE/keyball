@@ -114,7 +114,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______  , KC_7    , KC_8    , KC_9     , _______  ,                            _______  , S(KC_LBRC), S(KC_RBRC), LSG(KC_S), KC_PSCR,
       _______  , KC_4    , KC_5    , KC_6     , _______  ,                            _______  , S(KC_9)   , S(KC_0)   , _______  , KC_BSLS,
       _______  , KC_1    , KC_2    , KC_3     , _______  ,                            _______  , KC_LBRC   , KC_RBRC   , _______  , KC_SCLN,
-      _______  , _______ , _______ , KC_0     , _______  , _______  ,      _______  , _______  , _______   , _______   , _______  , _______
+      _______  , _______ , _______ , _______  , KC_0     ,_______  ,       _______  , _______  , _______   , _______   , _______  , _______
     ),
 
     [4] = LAYOUT_universal(
@@ -145,12 +145,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #include <stdint.h>
 #include <limits.h>
 
-#define AVERAGE_HISTORY 4
-#define LINEAR_THRESHOLD 0.2f  // 速度20%までリニア
-#define LINEAR_OUTPUT_MAX 0.8f // 出力速度は0.8まで
-#define MAX_OUTPUT_SPEED 1.0f         // 出力速度最大（正規化）
+#define AVERAGE_HISTORY 1
+#define LINEAR_THRESHOLD 0.4f  // リニアな感度の区間（0.0～1.0）
+#define LINEAR_OUTPUT_MAX 0.3f // リニアな感度に対しての補正最大値
 #define MINIMUM_MOVEMENT 0.01f // 最低移動保証
-#define MAX_ACCELERATION 2.0f  // 最大加速倍率（高速域で）
+#define MAX_ACCELERATION 1.0f  // リニア以上の高速域での最大加速倍率
+#define MAG_NORM_MAX 1.4142f // それぞれの入力が1の場合に最大の長さが√2になるため、√2を定数化して正規化する
 
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     static int8_t x_history[AVERAGE_HISTORY] = {0};
@@ -181,7 +181,7 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     // 正規化
     float norm_x = (float)avg_x / (float)INT8_MAX;
     float norm_y = (float)avg_y / (float)INT8_MAX;
-    float mag = sqrtf(norm_x * norm_x + norm_y * norm_y);
+    float mag = sqrtf(norm_x * norm_x + norm_y * norm_y) / MAG_NORM_MAX;
 
     if (mag > 0.0f) {
         float accel_scale;
