@@ -53,6 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define TAPPING_FORCE_HOLD  // 34バイト
 // 下記三つで444バイト
 #define TAPPING_TERM 175
+#define HOLD_ON_OTHER_KEY_PRESS // Tapping Term中に他のキーが押された場合にホールドを優先する
 // #define PERMISSIVE_HOLD
 // #define RETRO_TAPPING
 
