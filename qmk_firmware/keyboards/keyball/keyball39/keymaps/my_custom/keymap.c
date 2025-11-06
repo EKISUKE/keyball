@@ -62,6 +62,7 @@ void eeconfig_init_user(void) {
 }
 
 #include "utils/functions.h"
+#include "features/my_custom_record_keys.h"
 // #include "features/swipe_gesture.h"
 // #include "features/auto_click_layer.h"
 // #include "features/back_to_layer0_btn1.h"

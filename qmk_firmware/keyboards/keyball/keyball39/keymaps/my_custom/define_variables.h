@@ -23,7 +23,7 @@ typedef union {
     struct {
         int16_t to_clickable_movement;  // クリックレイヤーが有効になるしきい値
 #ifdef DYNAMIC_TAPPING_TERM_ENABLE
-        int8_t tapping_term;           // タッピングタームの設定値
+        int16_t tapping_term;           // タッピングタームの設定値
 #endif
     };
 } user_config_t;
