@@ -55,6 +55,9 @@
 void eeconfig_init_user(void) {
     user_config.raw = 0;
     user_config.to_clickable_movement = 25;
+#ifdef DYNAMIC_TAPPING_TERM_ENABLE
+    user_config.tapping_term = TAPPING_TERM;
+#endif
     eeconfig_update_user(user_config.raw);
 }
 
@@ -79,6 +82,13 @@ void eeconfig_init_user(void) {
 void keyboard_post_init_user(void) {
     if (eeconfig_is_enabled()) {
         user_config.raw = eeconfig_read_user();
+#ifdef DYNAMIC_TAPPING_TERM_ENABLE
+        if(user_config.tapping_term > 0)
+        {
+            // 保存された値でg_tapping_termを初期化
+            g_tapping_term = user_config.tapping_term;
+        }
+#endif
     }
 #ifdef RPC_ENABLE
     init_rpc();

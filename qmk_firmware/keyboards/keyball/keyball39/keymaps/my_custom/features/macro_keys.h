@@ -56,6 +56,18 @@ enum custom_keycodes {
     // CMD_SCRL,
 };
 
+static void send_value_report(uint16_t keycode, int16_t value)
+{
+#ifdef SEND_STRING_ENABLE
+    const char *str = get_u16_str(value, ' ');
+    // Skip padding spaces
+    while (*str == ' ') {
+        str++;
+    }
+    send_string(str);
+#endif
+}
+
 bool process_record_my_custom(uint16_t keycode, keyrecord_t* record)
 {
     if (record->event.pressed == false) {
@@ -78,6 +90,11 @@ bool process_record_my_custom(uint16_t keycode, keyrecord_t* record)
         return false;
 #endif
     case KBC_SAVE:
+#ifdef DYNAMIC_TAPPING_TERM_ENABLE
+        // 現在の g_tapping_term の値を保存
+        user_config.tapping_term = get_tapping_term();
+        tapping_term_report();
+#endif
         eeconfig_update_user(user_config.raw);
         return false;
     }
