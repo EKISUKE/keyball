@@ -100,54 +100,54 @@ void keyboard_post_init_user(void) {
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    // keymap for default
+    // チートシートの39キー配置を初期値にする。保存済みのVIA配列はEEPROM側が優先される。
     [0] = LAYOUT_universal(
-      KC_Q            , KC_W    , KC_E    , KC_R         , KC_T          ,                                KC_Y         , KC_U   , KC_I     , KC_O          , KC_P,
-      SFT_T(KC_A)     , KC_S    , KC_D    , KC_F         , KC_G          ,                                KC_H         , KC_J   , KC_K     , KC_L          , SFT_T(KC_TAB),
-      LT(3, KC_Z)     , KC_X    , KC_C    , KC_V         , KC_B          ,                                KC_N         , KC_M   , KC_COMMA , LT(3,KC_DOT)  , LT(4,KC_SLASH),
-      CTL_T(KC_LNG2)  , KC_LALT , KC_LGUI , LT(6,KC_TAB) , LT(2,KC_SPACE), CTL_T(KC_ESC),        KC_BSPC, ALT_T(KC_ENT), _______, _______  , _______       , LT(2,KC_LNG1)
+      KC_Q             , KC_W             , KC_E             , KC_R             , KC_T             , KC_Y             , KC_U             , KC_I             , KC_O             , KC_P,
+      LT(3, KC_A)      , KC_S             , KC_D             , KC_F             , KC_G             , KC_H             , KC_J             , KC_K             , KC_L             , LT(4, KC_TAB),
+      SFT_T(KC_Z)      , KC_X             , KC_C             , KC_V             , KC_B             , LT(2, KC_N)      , KC_M             , KC_COMMA         , LT(3,KC_DOT)     , RSFT_T(KC_SLASH),
+      CTL_T(KC_LNG2)   , KC_LALT          , KC_LGUI          , LT(6, KC_BSPC)   , LT(2,KC_SPACE)   , CTL_T(KC_ESC)    , KC_BSPC          , ALT_T(KC_ENT)    , _______          , _______          , _______          , LT(2,KC_LNG1)
     ),
 
     [1] = LAYOUT_universal(
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  ,KC_MS_BTN3, _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  ,KC_MS_BTN1,KC_MS_BTN2, SCRL_MO  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , KC_MS_BTN3       , RCTL_T(KC_LALT)  , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , KC_MS_BTN1       , KC_MS_BTN2       , SCRL_MO          , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______,
+      _______          , LSFT(KC_LALT)    , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______
     ),
    
     [2] = LAYOUT_universal(
-      SSNP_FRE , SSNP_VRT    , LGUI(KC_UP)  , SSNP_HOR     , KC_F8  ,                        LCA(KC_F11), KC_HOME  , KC_UP     , KC_END      , KC_GRAVE,
-      KC_LSFT  , LSG(KC_LEFT), LGUI(KC_DOWN), LSG(KC_RIGHT), _______,                        KC_PAGE_UP , KC_LEFT  , KC_DOWN   , KC_RIGHT    , KC_PAGE_DOWN,
-      KC_LCTL  , KC_F2       , KC_F3        , KC_F4        , KC_F5  ,                        KC_F9      , KC_F10   , KC_F11    , KC_F12      , _______,
-      _______  , _______     , _______      , _______      , _______, _______,      _______, _______    , _______  , _______   , _______     , _______
+      SSNP_FRE         , SSNP_VRT         , LGUI(KC_UP)      , SSNP_HOR         , KC_F8            , LCA(KC_F11)      , KC_HOME          , KC_UP            , KC_END           , KC_GRAVE,
+      KC_LCTL          , LSG(KC_LEFT)     , LGUI(KC_DOWN)    , LSG(KC_RIGHT)    , KC_LGUI          , KC_PAGE_UP       , KC_LEFT          , KC_DOWN          , KC_RIGHT         , KC_PAGE_DOWN,
+      KC_LSFT          , KC_F2            , KC_F3            , KC_F4            , KC_F5            , KC_F9            , KC_F10           , KC_F11           , KC_F12           , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , LSFT_T(KC_LALT)  , _______          , _______          , _______          , _______          , _______
     ),
 
     [3] = LAYOUT_universal(
-      _______  , KC_7    , KC_8    , KC_9     , _______  ,                            _______  , S(KC_LBRC), S(KC_RBRC), LSG(KC_S), KC_PSCR,
-      _______  , KC_4    , KC_5    , KC_6     , _______  ,                            _______  , S(KC_9)   , S(KC_0)   , _______  , KC_BSLS,
-      _______  , KC_1    , KC_2    , KC_3     , _______  ,                            _______  , KC_LBRC   , KC_RBRC   , _______  , KC_SCLN,
-      _______  , _______ , _______ , _______  , KC_0     ,_______  ,       _______  , _______  , _______   , _______   , _______  , _______
+      _______          , KC_7             , KC_8             , KC_9             , LCTL(LSFT(KC_ESC)), LCTL(LGUI(KC_T)), S(KC_LBRC)       , S(KC_RBRC)       , LSG(KC_S)        , KC_PSCR,
+      _______          , KC_4             , KC_5             , KC_6             , LGUI(KC_R)       , LGUI(KC_TAB)     , S(KC_9)          , S(KC_0)          , _______          , KC_BSLS,
+      _______          , KC_1             , KC_2             , KC_3             , KC_PAUS          , _______          , KC_LBRC          , KC_RBRC          , _______          , KC_SCLN,
+      _______          , _______          , _______          , KC_DEL           , KC_0             , _______          , KC_DEL           , _______          , _______          , _______          , _______          , _______
     ),
 
     [4] = LAYOUT_universal(
-      _______  , _______     , _______     , _______    , _______  ,                             _______   , _______   , KC_MS_BTN3  , _______  , _______  ,
-      _______  , _______     , _______     , KC_MS_BTN1 , _______  ,                             _______   , KC_MS_BTN1, KC_MS_BTN2  , SCRL_MO  , _______  ,
-      AML_TO   , AML_I50     , AML_D50     , CPI_I100   , CPI_D100 ,                             _______   , C(KC_C)   , C(KC_V)     , _______   , _______  ,
-      SCRL_DVI , SCRL_DVD    , KBC_SAVE    , _______    , _______  , _______  ,      KC_MS_BTN4, KC_MS_BTN5, _______   , _______     , _______   , _______
+      KC_KP_1          , KC_KP_2          , KC_KP_3          , KC_KP_4          , KC_KP_5          , _______          , _______          , KC_MS_BTN3       , _______          , _______,
+      _______          , _______          , DT_PRNT          , DT_UP            , DT_DOWN          , _______          , KC_MS_BTN1       , KC_MS_BTN2       , SCRL_MO          , _______,
+      AML_TO           , AML_I50          , AML_D50          , CPI_I100         , CPI_D100         , _______          , C(KC_C)          , C(KC_V)          , _______          , _______,
+      SCRL_DVI         , SCRL_DVD         , KBC_SAVE         , _______          , LCTL_T(KC_LALT)  , _______          , KC_MS_BTN4       , KC_MS_BTN5       , _______          , _______          , _______          , _______
     ),
 
     [5] = LAYOUT_universal(
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , SCRL_DVI , CPI_I100 , _______  , RGB_TOG  ,
-      _______  , _______  , _______  , _______  , _______  ,                            SCRL_DVD , CPI_D100 , _______  , _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  , _______  ,       _______ , KBC_RST  , _______  , _______  , _______  , _______
+      _______          , _______          , _______          , _______          , _______          , _______          , SCRL_DVI         , CPI_I100         , _______          , RGB_TOG,
+      _______          , _______          , _______          , _______          , _______          , SCRL_DVD         , CPI_D100         , _______          , _______          , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , KBC_RST          , _______          , _______          , _______          , _______
     ),
 
     [6] = LAYOUT_universal(
-      S(KC_1)  , S(KC_2)  , S(KC_3)   , S(KC_4)    , S(KC_5)   ,                                 _______  , _______  ,KC_MS_BTN3, _______  , KC_MINS  ,
-      KC_LSFT  , S(KC_6)  , S(KC_8)   , S(KC_7)    , S(KC_BSLS),                                 _______  ,KC_MS_BTN1,KC_MS_BTN2, SCRL_MO  , KC_EQUAL ,
-      _______  , KC_SCLN  , S(KC_SCLN), S(KC_QUOTE), KC_QUOTE  ,                                 _______  , _______  , _______  , _______  , _______  ,
-      _______  , _______  , _______   , _______    , _______   , _______  ,             KC_DEL , _______  , _______  , _______  , _______  , _______
+      S(KC_1)          , S(KC_2)          , S(KC_3)          , S(KC_6)          , S(KC_4)          , _______          , KC_MS_BTN4       , KC_MS_BTN3       , KC_MS_BTN5       , KC_MINS,
+      KC_LCTL          , S(KC_5)          , S(KC_8)          , S(KC_7)          , S(KC_BSLS)       , _______          , KC_MS_BTN1       , KC_MS_BTN2       , SCRL_MO          , KC_EQUAL,
+      _______          , KC_SCLN          , S(KC_SCLN)       , S(KC_QUOTE)      , KC_QUOTE         , _______          , C(KC_C)          , C(KC_V)          , _______          , _______,
+      _______          , _______          , _______          , KC_DEL           , _______          , _______          , KC_DEL           , _______          , _______          , _______          , _______          , _______
     ),
     
 };
