@@ -69,3 +69,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // QMKのオートマウスレイヤー
 #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #define AUTO_MOUSE_DEFAULT_LAYER 1 // レイヤーが大きいと別レイヤー動作時に切り替わってしまうため、最小レイヤーにしています。
+// 打鍵の長押し設定と独立させ、小さな揺れで文字入力が切り替わるのを防ぐ。
+#define AUTO_MOUSE_DELAY 500
+#define KEYBALL_AUTO_MOUSE_DISTANCE 8
+#define KEYBALL_AUTO_MOUSE_IDLE_MS 250

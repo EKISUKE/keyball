@@ -18,6 +18,7 @@ static void send_value_report(int16_t value)
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
+    keyball_auto_mouse_on_key(keycode, record);
     if (record->event.pressed == false) {
         return true;
     }

@@ -48,6 +48,7 @@
 #include QMK_KEYBOARD_H
 #include "quantum.h"
 #include "define_variables.h"
+#include "features/auto_mouse_guard_qmk.h"
 
 
 
@@ -164,6 +165,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #define MAG_NORM_MAX 1.4142f // それぞれの入力が1の場合に最大の長さが√2になるため、√2を定数化して正規化する
 
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    // 丸めや最低移動補正に起動判定が左右されないよう、生の移動を毎回取り込む。
+    keyball_auto_mouse_observe_report(mouse_report);
     static int8_t x_history[AVERAGE_HISTORY] = {0};
     static int8_t y_history[AVERAGE_HISTORY] = {0};
     static uint8_t history_index = 0;
@@ -219,6 +222,7 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 
 
 layer_state_t layer_state_set_user(layer_state_t state) {
+    keyball_auto_mouse_layer_changed(state);
     // レイヤーが1または2の場合、スクロールモードが有効になる
     // keyball_set_scroll_mode(get_highest_layer(state) == 1 || get_highest_layer(state) == 2);
 
