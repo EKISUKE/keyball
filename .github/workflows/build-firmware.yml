@@ -1,5 +1,8 @@
 name: Build a firmware
 
+permissions:
+  contents: read
+
 on:
 
   workflow_call:
@@ -29,15 +32,30 @@ jobs:
 
     - name: Checkout source
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Checkout qmk_firmware
       uses: ./.github/actions/checkout-qmk_firmware
+      with:
+        version: ${{ inputs.qmk_version }}
 
     - name: Install a link to own source
       run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
 
     - name: Compile and link
-      run: qmk compile -j 4 -kb keyball/${{ inputs.keyboard }} -km ${{ inputs.keymap }}
+      shell: bash
+      env:
+        KEYBOARD: ${{ inputs.keyboard }}
+        KEYMAP: ${{ inputs.keymap }}
+      run: |
+        # 入力をシェル構文やパスとして解釈させない。
+        case "$KEYBOARD" in
+          keyball39|keyball44|keyball61|keyball46|one47) ;;
+          *) echo 'Unsupported keyboard' >&2; exit 1 ;;
+        esac
+        [[ "$KEYMAP" =~ ^[A-Za-z0-9_-]+$ ]] || { echo 'Invalid keymap' >&2; exit 1; }
+        qmk compile -j 4 -kb "keyball/$KEYBOARD" -km "$KEYMAP"
 
     - name: Archive built firmware
       uses: actions/upload-artifact@v4

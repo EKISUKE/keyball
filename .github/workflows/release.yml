@@ -1,5 +1,8 @@
 name: Release firmwares
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
@@ -14,6 +17,8 @@ jobs:
   deploy:
     name: Deploy firmwares
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs:
     - build
 
@@ -21,6 +26,8 @@ jobs:
 
     - name: Checkout source
       uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Archive Keyball39 firmwares
       uses: ./.github/actions/release-archive

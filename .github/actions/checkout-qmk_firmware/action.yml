@@ -21,7 +21,10 @@ runs:
       repository: qmk/qmk_firmware
       submodules: recursive
       ref: ${{ inputs.version }}
+      persist-credentials: false
 
   - name: Setup QMK
     shell: bash
-    run: qmk setup --home ${{ inputs.path }} --yes
+    env:
+      QMK_HOME_PATH: ${{ inputs.path }}
+    run: qmk setup --home "$QMK_HOME_PATH" --yes
