@@ -269,6 +269,30 @@ int main(void) {
         CHECK(activate());
     }
 
+    /* クリックやSCRL_MOではレイヤーから戻らず、打鍵直後のスクロールで入った場合も維持する。 */
+    for (unsigned i = 0; i < sizeof(mouse_keys) / sizeof(mouse_keys[0]); ++i) {
+        reset_test();
+        enter_auto_layer();
+        for (int click = 0; click < 2; ++click) {
+            key(mouse_keys[i], true, 0);
+            key(mouse_keys[i], false, 0);
+        }
+        CHECK(test_resets == 0 && layer_state_is(AUTO_MOUSE_DEFAULT_LAYER));
+
+        reset_test();
+        key(KC_Q, true, 1);
+        key(KC_Q, false, 1);
+        keyball_auto_mouse_observe_report(scroll_reports[0]);
+        CHECK(auto_mouse_activation(scroll_reports[0]));
+        test_layers = (layer_state_t)1 << AUTO_MOUSE_DEFAULT_LAYER;
+        keyball_auto_mouse_layer_changed(test_layers);
+        key(mouse_keys[i], true, 0);
+        key(mouse_keys[i], false, 0);
+        CHECK(test_resets == 0 && layer_state_is(AUTO_MOUSE_DEFAULT_LAYER));
+        raw(1, 0);
+        CHECK(activate()); /* クリック後の移動でレイヤーの維持を続ける。 */
+    }
+
     /* レイヤーやModのホールド操作は打鍵ではなく、押下でも解放でも抑制を始めない。 */
     const uint16_t hold_keys[] = {LT(2, KC_SPACE), MT(0x01, KC_A), MO(2), KC_LEFT_CTRL};
     for (unsigned i = 0; i < sizeof(hold_keys) / sizeof(hold_keys[0]); ++i) {
