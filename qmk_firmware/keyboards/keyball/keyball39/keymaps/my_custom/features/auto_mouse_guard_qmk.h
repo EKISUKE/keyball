@@ -51,14 +51,21 @@ static void keyball_auto_mouse_on_key(uint16_t keycode, keyrecord_t *record) {
     }
     if (IS_MOUSEKEY(keycode) || is_mouse_record_kb(keycode, record)) {
         if (record->event.pressed) {
+            // ボタン操作後に抑制が残ると、続くボール移動でレイヤーを維持できない。
+            keyball_auto_mouse_clear_typing(&keyball_auto_mouse_guard);
             if (keyball_auto_mouse_held_keys < UINT8_MAX) ++keyball_auto_mouse_held_keys;
         } else if (keyball_auto_mouse_held_keys) {
             --keyball_auto_mouse_held_keys;
         }
         return;
     }
-    keyball_auto_mouse_note_typing(&keyball_auto_mouse_guard, timer_read32());
-    if (record->event.pressed && keyball_auto_mouse_is_typing(keycode, record) &&
+    bool typing = keyball_auto_mouse_is_typing(keycode, record);
+    // レイヤーやModのホールドは文字入力ではなく、スクロール用レイヤーの解放直後に操作を止めないよう除外する。
+    // S(KC_1)等の記号は文字入力なので抑制するが、QMKに合わせてレイヤー解除の対象にはしない。
+    if (typing || (keycode >= QK_MODS && keycode <= QK_MODS_MAX)) {
+        keyball_auto_mouse_note_typing(&keyball_auto_mouse_guard, timer_read32());
+    }
+    if (record->event.pressed && typing &&
         get_auto_mouse_enable() && keyball_auto_mouse_owned && !get_auto_mouse_toggle() &&
         !keyball_auto_mouse_held_keys && !keyball_auto_mouse_buttons_down && layer_state_is(get_auto_mouse_layer())) {
         // QMKの起動状態が残っていても、次の文字をクリックにしない。手動切替とドラッグは維持する。
@@ -71,6 +78,13 @@ static void keyball_auto_mouse_observe_report(report_mouse_t report) {
     bool active = layer_state_is(get_auto_mouse_layer());
     keyball_auto_mouse_buttons_down = report.buttons != 0;
     if (!active || !get_auto_mouse_enable()) keyball_auto_mouse_owned = false;
+    if (report.buttons || report.h || report.v) {
+        keyball_auto_mouse_clear_typing(&keyball_auto_mouse_guard);
+        // 打鍵後のQMK遅延中はauto_mouse_activationが呼ばれない。遅延だけを解除する公開APIがないため、
+        // 押下と解放を対で呼び、押下数を変えずに遅延タイマーを止める。
+        auto_mouse_keyevent(true);
+        auto_mouse_keyevent(false);
+    }
     keyball_auto_mouse_observe(&keyball_auto_mouse_guard, report.x, report.y, timer_read32(), get_auto_mouse_enable(), active);
 }
 

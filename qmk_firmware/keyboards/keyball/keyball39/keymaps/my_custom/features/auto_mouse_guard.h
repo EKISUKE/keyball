@@ -25,6 +25,10 @@ static inline void keyball_auto_mouse_note_typing(keyball_auto_mouse_guard_t *gu
     guard->typing_blocked = true;
 }
 
+static inline void keyball_auto_mouse_clear_typing(keyball_auto_mouse_guard_t *guard) {
+    guard->typing_blocked = false;
+}
+
 static inline bool keyball_auto_mouse_typing_blocked(keyball_auto_mouse_guard_t *guard, uint32_t now) {
     if (guard->typing_blocked && (uint32_t)(now - guard->typing_at) > AUTO_MOUSE_DELAY) {
         // 解除後は古い時刻を再評価せず、タイマー一周後の抑制復活を防ぐ。

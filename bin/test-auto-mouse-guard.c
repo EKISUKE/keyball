@@ -34,6 +34,12 @@ static void auto_mouse_reset_trigger(bool pressed) {
     ++test_resets;
     test_layers = 0;
 }
+static int test_mouse_tracker;
+static unsigned test_delay_clears;
+static void auto_mouse_keyevent(bool pressed) {
+    test_mouse_tracker += pressed ? 1 : -1;
+    ++test_delay_clears;
+}
 
 #include "../qmk_firmware/keyboards/keyball/keyball39/keymaps/my_custom/features/auto_mouse_guard_qmk.h"
 
@@ -50,6 +56,8 @@ static void reset_test(void) {
     test_enabled = true;
     test_toggle = false;
     test_resets = 0;
+    test_mouse_tracker = 0;
+    test_delay_clears = 0;
 }
 
 static void raw(int8_t x, int8_t y) {
@@ -226,6 +234,69 @@ int main(void) {
     test_toggle = true;
     key(KC_Q, true, 1);
     CHECK(test_resets == 0);
+
+    /* スクロールは打鍵直後でもQMKの遅延ごと解除し、続くボール移動も抑制しない。 */
+    report_mouse_t scroll_reports[3] = {{0}, {0}, {0}};
+    scroll_reports[0].v = 1;
+    scroll_reports[1].h = -1;
+    scroll_reports[2].buttons = 1;
+    for (unsigned i = 0; i < sizeof(scroll_reports) / sizeof(scroll_reports[0]); ++i) {
+        reset_test();
+        key(KC_Q, true, 1);
+        key(KC_Q, false, 1);
+        keyball_auto_mouse_observe_report(scroll_reports[i]);
+        CHECK(!keyball_auto_mouse_guard.typing_blocked);
+        CHECK(test_delay_clears > 0 && test_mouse_tracker == 0);
+        CHECK(auto_mouse_activation(scroll_reports[i]));
+        raw(KEYBALL_AUTO_MOUSE_DISTANCE, 0);
+        CHECK(activate());
+    }
+
+    /* 移動のないレポートでは打鍵後の抑制を解除しない。 */
+    reset_test();
+    key(KC_Q, true, 1);
+    raw(0, 0);
+    CHECK(keyball_auto_mouse_guard.typing_blocked && test_delay_clears == 0);
+
+    /* レイヤー上のボタンとSCRL_MOも打鍵後の抑制を解除する。 */
+    for (unsigned i = 0; i < sizeof(mouse_keys) / sizeof(mouse_keys[0]); ++i) {
+        reset_test();
+        key(KC_Q, true, 1);
+        key(mouse_keys[i], true, 0);
+        CHECK(!keyball_auto_mouse_guard.typing_blocked);
+        key(mouse_keys[i], false, 0);
+        raw(KEYBALL_AUTO_MOUSE_DISTANCE, 0);
+        CHECK(activate());
+    }
+
+    /* レイヤーやModのホールド操作は打鍵ではなく、押下でも解放でも抑制を始めない。 */
+    const uint16_t hold_keys[] = {LT(2, KC_SPACE), MT(0x01, KC_A), MO(2), KC_LEFT_CTRL};
+    for (unsigned i = 0; i < sizeof(hold_keys) / sizeof(hold_keys[0]); ++i) {
+        reset_test();
+        key(hold_keys[i], true, 0);
+        CHECK(!keyball_auto_mouse_guard.typing_blocked);
+        key(hold_keys[i], false, 0);
+        CHECK(!keyball_auto_mouse_guard.typing_blocked);
+        raw(KEYBALL_AUTO_MOUSE_DISTANCE, 0);
+        CHECK(activate());
+    }
+
+    /* ホールド解放より前の文字入力の抑制は短縮しない。 */
+    reset_test();
+    key(KC_Q, true, 1);
+    key(LT(2, KC_SPACE), false, 0);
+    raw(KEYBALL_AUTO_MOUSE_DISTANCE, 0);
+    CHECK(!activate());
+
+    /* タップされたLT/MTと修飾付き記号は打鍵として抑制する。 */
+    const uint16_t typed_keys[] = {LT(2, KC_SPACE), MT(0x01, KC_A), LSFT(KC_1)};
+    for (unsigned i = 0; i < sizeof(typed_keys) / sizeof(typed_keys[0]); ++i) {
+        reset_test();
+        key(typed_keys[i], true, 1);
+        CHECK(keyball_auto_mouse_guard.typing_blocked);
+        raw(KEYBALL_AUTO_MOUSE_DISTANCE, 0);
+        CHECK(!activate());
+    }
 
     reset_test();
     raw(7, 0);
