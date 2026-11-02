@@ -23,8 +23,23 @@ runs:
       ref: ${{ inputs.version }}
       persist-credentials: false
 
+  # qmk_cli:latest は中身が変わって依存が欠けるため、確認済みイメージ固定と分離venvで揃える。
+  # QMK 0.22 は Python 3.14 で削除された ast.Num を使うため、イメージ既定ではなく 3.13 を使う。
+  - name: Setup Python for QMK
+    shell: bash
+    env:
+      QMK_HOME_PATH: ${{ inputs.path }}
+    run: |
+      set -euo pipefail
+      /usr/bin/python3 -c 'import sys; assert sys.version_info[:2] == (3, 13)'
+      venv="$RUNNER_TEMP/qmk-python"
+      /usr/bin/python3 -m venv --without-pip "$venv"
+      python3 -m pip --python "$venv/bin/python3" install --disable-pip-version-check qmk==1.2.0 -r "$QMK_HOME_PATH/requirements.txt"
+      echo "$venv/bin" >> "$GITHUB_PATH"
   - name: Setup QMK
     shell: bash
     env:
       QMK_HOME_PATH: ${{ inputs.path }}
-    run: qmk setup --home "$QMK_HOME_PATH" --yes
+    run: |
+      export VIRTUAL_ENV="$RUNNER_TEMP/qmk-python"
+      qmk setup --home "$QMK_HOME_PATH" --yes
