@@ -10,7 +10,7 @@ on:
       - 'qmk_firmware/keyboards/keyball/**.c'
       - 'qmk_firmware/keyboards/keyball/**.h'
       - 'qmk_firmware/keyboards/keyball/**.json'
-      - '.github/**.yml'
+      - '.github/**'
     tags-ignore:
       - '*'
     branches:
@@ -22,7 +22,7 @@ on:
       - 'qmk_firmware/keyboards/keyball/**.c'
       - 'qmk_firmware/keyboards/keyball/**.h'
       - 'qmk_firmware/keyboards/keyball/**.json'
-      - '.github/**.yml'
+      - '.github/**'
 
   workflow_call: {}
 
