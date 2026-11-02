@@ -48,6 +48,7 @@
 #include QMK_KEYBOARD_H
 #include "quantum.h"
 #include "define_variables.h"
+#include "features/auto_mouse_guard_qmk.h"
 
 
 
@@ -55,10 +56,14 @@
 void eeconfig_init_user(void) {
     user_config.raw = 0;
     user_config.to_clickable_movement = 25;
+#ifdef DYNAMIC_TAPPING_TERM_ENABLE
+    user_config.tapping_term = TAPPING_TERM;
+#endif
     eeconfig_update_user(user_config.raw);
 }
 
 #include "utils/functions.h"
+#include "features/my_custom_record_keys.h"
 // #include "features/swipe_gesture.h"
 // #include "features/auto_click_layer.h"
 // #include "features/back_to_layer0_btn1.h"
@@ -79,6 +84,13 @@ void eeconfig_init_user(void) {
 void keyboard_post_init_user(void) {
     if (eeconfig_is_enabled()) {
         user_config.raw = eeconfig_read_user();
+#ifdef DYNAMIC_TAPPING_TERM_ENABLE
+        if(user_config.tapping_term > 0)
+        {
+            // 保存された値でg_tapping_termを初期化
+            g_tapping_term = user_config.tapping_term;
+        }
+#endif
     }
 #ifdef RPC_ENABLE
     init_rpc();
@@ -88,60 +100,129 @@ void keyboard_post_init_user(void) {
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    // keymap for default
+    // チートシートの39キー配置を初期値にする。保存済みのVIA配列はEEPROM側が優先される。
     [0] = LAYOUT_universal(
-      KC_Q            , KC_W    , KC_E    , KC_R         , KC_T          ,                                KC_Y         , KC_U   , KC_I     , KC_O          , KC_P,
-      SFT_T(KC_A)     , KC_S    , KC_D    , KC_F         , KC_G          ,                                KC_H         , KC_J   , KC_K     , KC_L          , SFT_T(KC_TAB),
-      LT(3, KC_Z)     , KC_X    , KC_C    , KC_V         , KC_B          ,                                KC_N         , KC_M   , KC_COMMA , LT(3,KC_DOT)  , LT(4,KC_SLASH),
-      CTL_T(KC_LNG2)  , KC_LALT , KC_LGUI , LT(6,KC_TAB) , LT(2,KC_SPACE), CTL_T(KC_ESC),        KC_BSPC, ALT_T(KC_ENT), _______, _______  , _______       , LT(2,KC_LNG1)
+      KC_Q             , KC_W             , KC_E             , KC_R             , KC_T             , KC_Y             , KC_U             , KC_I             , KC_O             , KC_P,
+      LT(3, KC_A)      , KC_S             , KC_D             , KC_F             , KC_G             , KC_H             , KC_J             , KC_K             , KC_L             , LT(4, KC_TAB),
+      SFT_T(KC_Z)      , KC_X             , KC_C             , KC_V             , KC_B             , LT(2, KC_N)      , KC_M             , KC_COMMA         , LT(3,KC_DOT)     , RSFT_T(KC_SLASH),
+      CTL_T(KC_LNG2)   , KC_LALT          , KC_LGUI          , LT(6, KC_BSPC)   , LT(2,KC_SPACE)   , CTL_T(KC_ESC)    , KC_BSPC          , ALT_T(KC_ENT)    , _______          , _______          , _______          , LT(2,KC_LNG1)
     ),
 
     [1] = LAYOUT_universal(
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  ,KC_MS_BTN3, _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  ,KC_MS_BTN1,KC_MS_BTN2, SCRL_MO  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , KC_MS_BTN3       , RCTL_T(KC_LALT)  , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , KC_MS_BTN1       , KC_MS_BTN2       , SCRL_MO          , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______,
+      _______          , LSFT(KC_LALT)    , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______
     ),
    
     [2] = LAYOUT_universal(
-      SSNP_FRE , SSNP_VRT    , LGUI(KC_UP)  , SSNP_HOR     , KC_F8  ,                        LCA(KC_F11), KC_HOME  , KC_UP     , KC_END      , KC_GRAVE,
-      KC_LSFT  , LSG(KC_LEFT), LGUI(KC_DOWN), LSG(KC_RIGHT), _______,                        KC_PAGE_UP , KC_LEFT  , KC_DOWN   , KC_RIGHT    , KC_PAGE_DOWN,
-      KC_LCTL  , KC_F2       , KC_F3        , KC_F4        , KC_F5  ,                        KC_F9      , KC_F10   , KC_F11    , KC_F12      , _______,
-      _______  , _______     , _______      , _______      , _______, _______,      _______, _______    , _______  , _______   , _______     , _______
+      SSNP_FRE         , SSNP_VRT         , LGUI(KC_UP)      , SSNP_HOR         , KC_F8            , LCA(KC_F11)      , KC_HOME          , KC_UP            , KC_END           , KC_GRAVE,
+      KC_LCTL          , LSG(KC_LEFT)     , LGUI(KC_DOWN)    , LSG(KC_RIGHT)    , KC_LGUI          , KC_PAGE_UP       , KC_LEFT          , KC_DOWN          , KC_RIGHT         , KC_PAGE_DOWN,
+      KC_LSFT          , KC_F2            , KC_F3            , KC_F4            , KC_F5            , KC_F9            , KC_F10           , KC_F11           , KC_F12           , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , LSFT_T(KC_LALT)  , _______          , _______          , _______          , _______          , _______
     ),
 
     [3] = LAYOUT_universal(
-      _______  , KC_7    , KC_8    , KC_9     , _______  ,                            _______  , S(KC_LBRC), S(KC_RBRC), LSG(KC_S), KC_PSCR,
-      _______  , KC_4    , KC_5    , KC_6     , _______  ,                            _______  , S(KC_9)   , S(KC_0)   , _______  , KC_BSLS,
-      _______  , KC_1    , KC_2    , KC_3     , _______  ,                            _______  , KC_LBRC   , KC_RBRC   , _______  , KC_SCLN,
-      _______  , _______ , _______ , KC_0     , _______  , _______  ,      _______  , _______  , _______   , _______   , _______  , _______
+      _______          , KC_7             , KC_8             , KC_9             , LCTL(LSFT(KC_ESC)), LCTL(LGUI(KC_T)), S(KC_LBRC)       , S(KC_RBRC)       , LSG(KC_S)        , KC_PSCR,
+      _______          , KC_4             , KC_5             , KC_6             , LGUI(KC_R)       , LGUI(KC_TAB)     , S(KC_9)          , S(KC_0)          , _______          , KC_BSLS,
+      _______          , KC_1             , KC_2             , KC_3             , KC_PAUS          , _______          , KC_LBRC          , KC_RBRC          , _______          , KC_SCLN,
+      _______          , _______          , _______          , KC_DEL           , KC_0             , _______          , KC_DEL           , _______          , _______          , _______          , _______          , _______
     ),
 
     [4] = LAYOUT_universal(
-      _______  , _______     , _______     , _______    , _______  ,                             _______   , _______   , KC_MS_BTN3  , _______  , _______  ,
-      _______  , _______     , _______     , KC_MS_BTN1 , _______  ,                             _______   , KC_MS_BTN1, KC_MS_BTN2  , SCRL_MO  , _______  ,
-      AML_TO   , AML_I50     , AML_D50     , CPI_I100   , CPI_D100 ,                             _______   , C(KC_C)   , C(KC_V)     , _______   , _______  ,
-      SCRL_DVI , SCRL_DVD    , KBC_SAVE    , _______    , _______  , _______  ,      KC_MS_BTN4, KC_MS_BTN5, _______   , _______     , _______   , _______
+      KC_KP_1          , KC_KP_2          , KC_KP_3          , KC_KP_4          , KC_KP_5          , _______          , _______          , KC_MS_BTN3       , _______          , _______,
+      _______          , _______          , DT_PRNT          , DT_UP            , DT_DOWN          , _______          , KC_MS_BTN1       , KC_MS_BTN2       , SCRL_MO          , _______,
+      AML_TO           , AML_I50          , AML_D50          , CPI_I100         , CPI_D100         , _______          , C(KC_C)          , C(KC_V)          , _______          , _______,
+      SCRL_DVI         , SCRL_DVD         , KBC_SAVE         , _______          , LCTL_T(KC_LALT)  , _______          , KC_MS_BTN4       , KC_MS_BTN5       , _______          , _______          , _______          , _______
     ),
 
     [5] = LAYOUT_universal(
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , SCRL_DVI , CPI_I100 , _______  , RGB_TOG  ,
-      _______  , _______  , _______  , _______  , _______  ,                            SCRL_DVD , CPI_D100 , _______  , _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-      _______  , _______  , _______  , _______  , _______  , _______  ,       _______ , KBC_RST  , _______  , _______  , _______  , _______
+      _______          , _______          , _______          , _______          , _______          , _______          , SCRL_DVI         , CPI_I100         , _______          , RGB_TOG,
+      _______          , _______          , _______          , _______          , _______          , SCRL_DVD         , CPI_D100         , _______          , _______          , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______          , _______,
+      _______          , _______          , _______          , _______          , _______          , _______          , _______          , KBC_RST          , _______          , _______          , _______          , _______
     ),
 
     [6] = LAYOUT_universal(
-      S(KC_1)  , S(KC_2)  , S(KC_3)   , S(KC_4)    , S(KC_5)   ,                                 _______  , _______  ,KC_MS_BTN3, _______  , KC_MINS  ,
-      KC_LSFT  , S(KC_6)  , S(KC_8)   , S(KC_7)    , S(KC_BSLS),                                 _______  ,KC_MS_BTN1,KC_MS_BTN2, SCRL_MO  , KC_EQUAL ,
-      _______  , KC_SCLN  , S(KC_SCLN), S(KC_QUOTE), KC_QUOTE  ,                                 _______  , _______  , _______  , _______  , _______  ,
-      _______  , _______  , _______   , _______    , _______   , _______  ,             KC_DEL , _______  , _______  , _______  , _______  , _______
+      S(KC_1)          , S(KC_2)          , S(KC_3)          , S(KC_6)          , S(KC_4)          , _______          , KC_MS_BTN4       , KC_MS_BTN3       , KC_MS_BTN5       , KC_MINS,
+      KC_LCTL          , S(KC_5)          , S(KC_8)          , S(KC_7)          , S(KC_BSLS)       , _______          , KC_MS_BTN1       , KC_MS_BTN2       , SCRL_MO          , KC_EQUAL,
+      _______          , KC_SCLN          , S(KC_SCLN)       , S(KC_QUOTE)      , KC_QUOTE         , _______          , C(KC_C)          , C(KC_V)          , _______          , _______,
+      _______          , _______          , _______          , KC_DEL           , _______          , _______          , KC_DEL           , _______          , _______          , _______          , _______          , _______
     ),
     
 };
 // clang-format on
 
+#include <math.h>
+#include <stdint.h>
+#include <limits.h>
+
+#define AVERAGE_HISTORY 1
+#define LINEAR_THRESHOLD 0.4f  // リニアな感度の区間（0.0～1.0）
+#define LINEAR_OUTPUT_MAX 0.3f // リニアな感度に対しての補正最大値
+#define MINIMUM_MOVEMENT 0.01f // 最低移動保証
+#define MAX_ACCELERATION 1.0f  // リニア以上の高速域での最大加速倍率
+#define MAG_NORM_MAX 1.4142f // それぞれの入力が1の場合に最大の長さが√2になるため、√2を定数化して正規化する
+
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    // 丸めや最低移動補正に起動判定が左右されないよう、生の移動を毎回取り込む。
+    keyball_auto_mouse_observe_report(mouse_report);
+    static int8_t x_history[AVERAGE_HISTORY] = {0};
+    static int8_t y_history[AVERAGE_HISTORY] = {0};
+    static uint8_t history_index = 0;
+
+    // 履歴保存
+    x_history[history_index] = mouse_report.x;
+    y_history[history_index] = mouse_report.y;
+    history_index = (history_index + 1) % AVERAGE_HISTORY;
+
+    // 重み付き平均
+    int32_t x_weighted_sum = 0;
+    int32_t y_weighted_sum = 0;
+    int32_t total_weight = 0;
+    for (int i = 0; i < AVERAGE_HISTORY; i++) {
+        int weight = (i + 1);
+        x_weighted_sum += x_history[(history_index + i) % AVERAGE_HISTORY] * weight;
+        y_weighted_sum += y_history[(history_index + i) % AVERAGE_HISTORY] * weight;
+        total_weight += weight;
+    }
+    int8_t avg_x = (int8_t)(x_weighted_sum / total_weight);
+    int8_t avg_y = (int8_t)(y_weighted_sum / total_weight);
+
+    mouse_report.x = avg_x;
+    mouse_report.y = avg_y;
+
+    // 正規化
+    float norm_x = (float)avg_x / (float)INT8_MAX;
+    float norm_y = (float)avg_y / (float)INT8_MAX;
+    float mag = sqrtf(norm_x * norm_x + norm_y * norm_y) / MAG_NORM_MAX;
+
+    if (mag > 0.0f) {
+        float accel_scale;
+        if (mag <= LINEAR_THRESHOLD) {
+            // 低速域：リニア、ただし最低保証あり
+            accel_scale = LINEAR_OUTPUT_MAX;
+            if (mag < MINIMUM_MOVEMENT) {
+                accel_scale = MINIMUM_MOVEMENT / mag;
+            }
+        } else {
+            // 高速域：スムーズに最大加速へ
+            float t = (mag - LINEAR_THRESHOLD) / (1.0f - LINEAR_THRESHOLD);
+            accel_scale = LINEAR_OUTPUT_MAX + t * (MAX_ACCELERATION - LINEAR_OUTPUT_MAX);
+        }
+
+        // スケール適用
+        mouse_report.x = (int8_t)fmaxf(fminf(avg_x * accel_scale, INT8_MAX), INT8_MIN);
+        mouse_report.y = (int8_t)fmaxf(fminf(avg_y * accel_scale, INT8_MAX), INT8_MIN);
+    }
+
+    return mouse_report;
+}
+
+
+
 layer_state_t layer_state_set_user(layer_state_t state) {
+    keyball_auto_mouse_layer_changed(state);
     // レイヤーが1または2の場合、スクロールモードが有効になる
     // keyball_set_scroll_mode(get_highest_layer(state) == 1 || get_highest_layer(state) == 2);
 
@@ -265,6 +346,7 @@ void oledkit_render_info_user(void) {
     keyball_oled_render_keyinfo();   // キー情報を表示
     keyball_oled_render_ballinfo();  // トラックボール情報を表示
     keyball_oled_render_layerinfo(); // <Layer>を表示する
+
 
 //     // <Layer>を表示する
 // #if OLED_INFO_COMPACT

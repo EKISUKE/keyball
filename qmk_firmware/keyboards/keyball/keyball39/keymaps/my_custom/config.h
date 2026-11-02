@@ -52,7 +52,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // #define TAPPING_FORCE_HOLD  // 34バイト
 // 下記三つで444バイト
-#define TAPPING_TERM 175
+#define TAPPING_TERM 135
+//#define HOLD_ON_OTHER_KEY_PRESS // Tapping Term中に他のキーが押された場合にホールドを優先する
 // #define PERMISSIVE_HOLD
 // #define RETRO_TAPPING
 
@@ -68,3 +69,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // QMKのオートマウスレイヤー
 #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #define AUTO_MOUSE_DEFAULT_LAYER 1 // レイヤーが大きいと別レイヤー動作時に切り替わってしまうため、最小レイヤーにしています。
+// 打鍵の長押し設定と独立させ、小さな揺れで文字入力が切り替わるのを防ぐ。
+#define AUTO_MOUSE_DELAY 500
+#define KEYBALL_AUTO_MOUSE_DISTANCE 8
+#define KEYBALL_AUTO_MOUSE_IDLE_MS 250

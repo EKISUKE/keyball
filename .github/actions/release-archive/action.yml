@@ -21,11 +21,20 @@ runs:
 
   - name: Archive firmwares
     shell: bash
+    env:
+      FIRMWARE_NAME: ${{ inputs.name }}
+      FIRMWARE_VERSION: ${{ inputs.version }}
     run: |
-      zip -9 ${{ inputs.name }}-${{ inputs.version }}.zip keyball_${{ inputs.name }}_*.hex README.md
+      # タグ名も入力値なので、展開前にファイル名に使える形式へ制限する。
+      case "$FIRMWARE_NAME" in
+        keyball39|keyball44|keyball61|keyball46|one47) ;;
+        *) echo 'Unsupported keyboard' >&2; exit 1 ;;
+      esac
+      [[ "$FIRMWARE_VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || { echo 'Invalid version' >&2; exit 1; }
+      zip -9 "$FIRMWARE_NAME-$FIRMWARE_VERSION.zip" keyball_"$FIRMWARE_NAME"_*.hex README.md
       # Add README.md if available
-      if [ -f ${{ inputs.name }}/doc/firmware_README.md ] ; then
-        cp ${{ inputs.name }}/doc/firmware_README.md README.md
-        zip -9 ${{ inputs.name }}-${{ inputs.version }}.zip README.md
+      if [ -f "$FIRMWARE_NAME/doc/firmware_README.md" ] ; then
+        cp "$FIRMWARE_NAME/doc/firmware_README.md" README.md
+        zip -9 "$FIRMWARE_NAME-$FIRMWARE_VERSION.zip" README.md
         rm -f README.md
       fi

@@ -1,5 +1,8 @@
 name: Build a firmware on demand
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
